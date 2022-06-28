@@ -64,11 +64,11 @@ public class CustomerRepository {
         statement = connection.prepareStatement(
                 "UPDATE Customer SET identifier=?, new_email=?, new_password=?"
         );
-        statement.setString(1, identifier);
-        statement.setString(2, newEmail);
-        statement.setString(3, newPassword);
+        statement.setLong(1, customer.getId());
+        statement.setString(2, customer.getEmail());
+        statement.setString(3, customer.getIdentifier());
 
-        if (statement.executeUpdate() !=1){
+        if (statement.executeUpdate(newPassword) !=1){
           throw new SQLException("failed to update data");
         }
 
@@ -87,7 +87,7 @@ public class CustomerRepository {
         JdbcUtils.closeConnection(connection);
 
         connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
-        statement = connection.createStatement();
+        statement = connection.prepareStatement(query);
         query = "SELECT * FROM customer WHERE identifier = '" + identifier + "'";
         resultSet = statement.executeQuery(query);
 
