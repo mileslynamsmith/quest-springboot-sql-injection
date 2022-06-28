@@ -1,6 +1,7 @@
 package com.bankzecure.webapp.repository;
 
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -15,13 +16,17 @@ public class CustomerRepository {
 
   public Customer findByIdentifierAndPassword(final String identifier, final String password) {
     Connection connection = null;
-    Statement statement = null;
+    PreparedStatement statement = null;
     ResultSet resultSet = null;
     try {
       connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
-      statement = connection.createStatement();
+      statement = connection.prepareStatement(
+                "SELECT * FROM customer WHERE id = ?;"
+      );
+      statement.setString(1, identifier);
+      statement.setString(2, password);
       final String query = "SELECT * FROM customer " +
-        "WHERE identifier = '" + identifier + "' AND password = '" + password + "'";
+        "WHERE identifier = ?'" + identifier + "' AND password = ?'" + password + "?'";
       resultSet = statement.executeQuery(query);
 
       Customer customer = null;
@@ -48,7 +53,7 @@ public class CustomerRepository {
   public Customer update(String identifier, String newEmail, String newPassword) {
 
     Connection connection = null;
-    Statement statement = null;
+    PreparedStatement statement = null;
     ResultSet resultSet = null;
     Customer customer = null;
     try {
@@ -56,7 +61,16 @@ public class CustomerRepository {
         connection = DriverManager.getConnection(
           DB_URL, DB_USERNAME, DB_PASSWORD
         );
-        statement = connection.createStatement();
+        statement = connection.prepareStatement(
+                "UPDATE Customer SET identifier=?, new_email=?, new_password=?"
+        );
+        statement.setString(1, identifier);
+        statement.setString(2, newEmail);
+        statement.setString(3, newPassword);
+
+        if (statement.executeUpdate() !=1){
+          throw new SQLException("failed to update data");
+        }
 
         // Build the update query using a QueryBuilder
         StringBuilder queryBuilder = new StringBuilder();
